@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 
 interface NavbarProps {
   onPlayDemo: () => void;
+  isPressed?: boolean;
 }
 
-export function Navbar({ onPlayDemo }: NavbarProps) {
+export function Navbar({ onPlayDemo, isPressed = false }: NavbarProps) {
   const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
@@ -30,7 +31,12 @@ export function Navbar({ onPlayDemo }: NavbarProps) {
       <div className="flex items-center gap-4">
         <button
           onClick={onPlayDemo}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded transition-colors"
+          className={`px-4 py-2 text-white font-medium rounded transition-colors ${
+            isPressed 
+              ? 'bg-gray-600 cursor-not-allowed' 
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+          disabled={isPressed}
         >
           Play demo
         </button>

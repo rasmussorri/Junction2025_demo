@@ -11,7 +11,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#2a2d2e] text-gray-100">
-      <Navbar onPlayDemo={() => setShouldPlayVideo(true)} />
+      <Navbar onPlayDemo={() => setShouldPlayVideo(true)} isPressed={shouldPlayVideo} />
       <div className="flex h-[calc(100vh-64px)]">
         {/* Main map area */}
         <div className="flex-1 relative">

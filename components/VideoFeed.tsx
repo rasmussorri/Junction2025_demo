@@ -4,10 +4,14 @@ import { useEffect, useState, useRef } from 'react';
 
 interface VideoFeedProps {
   shouldPlay: boolean;
+  onVideoPlaying?: (isPlaying: boolean) => void;
+  onVideoShown?: (isShown: boolean) => void;
 }
 
-export function VideoFeed({ shouldPlay }: VideoFeedProps) {
+export function VideoFeed({ shouldPlay, onVideoPlaying, onVideoShown }: VideoFeedProps) {
   const [currentTime, setCurrentTime] = useState('');
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -26,19 +30,74 @@ export function VideoFeed({ shouldPlay }: VideoFeedProps) {
   }, []);
 
   useEffect(() => {
-    if (shouldPlay && videoRef.current) {
+    if (shouldPlay) {
+      // Wait 5 seconds before showing and starting the video
+      const timeout = setTimeout(() => {
+        setShowVideo(true);
+        if (onVideoShown) {
+          onVideoShown(true);
+        }
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    } else {
+      setShowVideo(false);
+      setIsVideoPlaying(false);
+      if (onVideoPlaying) {
+        onVideoPlaying(false);
+      }
+      if (onVideoShown) {
+        onVideoShown(false);
+      }
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
+    }
+  }, [shouldPlay, onVideoPlaying, onVideoShown]);
+
+  useEffect(() => {
+    // When video element appears, immediately start playing
+    if (showVideo && videoRef.current) {
       videoRef.current.play().catch((error) => {
         console.error('Error playing video:', error);
       });
     }
-  }, [shouldPlay]);
+  }, [showVideo]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => {
+      setIsVideoPlaying(true);
+      if (onVideoPlaying) {
+        onVideoPlaying(true);
+      }
+    };
+
+    const handlePause = () => {
+      setIsVideoPlaying(false);
+      if (onVideoPlaying) {
+        onVideoPlaying(false);
+      }
+    };
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+
+    return () => {
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+    };
+  }, [onVideoPlaying]);
 
   return (
     <div className="h-full w-full relative bg-black overflow-hidden rounded-b-lg">
       {/* Video Display */}
       <div className="absolute inset-0 rounded-b-lg">
         {/* Video Element */}
-        {shouldPlay && (
+        {showVideo && (
           <video
             ref={videoRef}
             src="/drone-demo-final.mp4"
@@ -69,18 +128,20 @@ export function VideoFeed({ shouldPlay }: VideoFeedProps) {
         {/* Overlaid Text - Top Right */}
         <div className="absolute top-3 right-3 text-white">
           <div className="text-xs text-gray-300">
-            <div>CAM-01</div>
+            <div>{showVideo ? 'CAM-03' : 'CAM-XX'}</div>
             <div className="font-mono">{currentTime}</div>
           </div>
         </div>
         
         {/* Overlaid Text - Bottom Left */}
-        <div className="absolute bottom-3 left-3 text-white">
-          <div className="text-xs text-gray-300 space-y-1 bg-black/50 px-2 py-1 rounded">
-            <div>AZ: 045° | EL: +12°</div>
-            <div>ZOOM: 2.4x</div>
+        {showVideo && (
+          <div className="absolute bottom-3 left-3 text-white">
+            <div className="text-xs text-gray-300 space-y-1 bg-black/50 px-2 py-1 rounded">
+              <div>AZ: 045° | EL: +12°</div>
+              <div>ZOOM: 2.4x</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

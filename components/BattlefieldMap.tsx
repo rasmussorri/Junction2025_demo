@@ -21,7 +21,11 @@ const cameras: CameraMarker[] = [
   { id: 'CAM-06', x: 65, y: 90, angle: 90, hasFieldOfView: true, isActive: true },
 ];
 
-export function BattlefieldMap() {
+interface BattlefieldMapProps {
+  isVideoPlaying?: boolean;
+}
+
+export function BattlefieldMap({ isVideoPlaying = false }: BattlefieldMapProps) {
   const [isHoveringHQ, setIsHoveringHQ] = useState(false);
 
   return (
@@ -213,17 +217,23 @@ export function BattlefieldMap() {
                      {/* Filled triangle */}
                      <polygon
                        points="0,-10 -70,200 70,200"
-                       fill="#22c55e"
-                       fillOpacity="0.4"
+                       fill={isVideoPlaying && camera.id === 'CAM-03' ? "#ef4444" : "#22c55e"}
+                       fillOpacity={isVideoPlaying && camera.id === 'CAM-03' ? "0.6" : "0.4"}
+                       style={isVideoPlaying && camera.id === 'CAM-03' ? {
+                         animation: 'flash-alert 0.8s ease-in-out infinite',
+                       } : {}}
                      />
                      {/* Border outline - rendered on top */}
                      <polygon
                        points="0,-10 -70,200 70,200"
                        fill="none"
-                       stroke="#22c55e"
+                       stroke={isVideoPlaying && camera.id === 'CAM-03' ? "#ef4444" : "#22c55e"}
                        strokeWidth="2.5"
-                       strokeOpacity="1"
+                       strokeOpacity={isVideoPlaying && camera.id === 'CAM-03' ? "1" : "1"}
                        vectorEffect="non-scaling-stroke"
+                       style={isVideoPlaying && camera.id === 'CAM-03' ? {
+                         animation: 'flash-alert 0.8s ease-in-out infinite',
+                       } : {}}
                      />
                    </>
                  )}
